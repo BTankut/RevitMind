@@ -1,0 +1,16 @@
+# API Keys
+server/chatgptapikey.env
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vs/
+*.vsidx
+*.suo
+*.cache
+
+# Temp files
+*.log
+temp.html
