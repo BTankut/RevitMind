@@ -1,0 +1,86 @@
+<!doctype html public "-//w3c//dtd html 4.01 transitional//en" "http://www.w3.org/tr/html4/loose.dtd"><head><meta http-equiv="x-ua-compatible" content="ie=edge" /><meta http-equiv="content-type" content="text/html; charset=utf-8" /><meta name="appversion" content="4.8.13.23182" /><meta name="rendererversion" content="11.0.19041.3570" /><link rel="stylesheet" href="file:///c:\program files\pyrevit-master\pyrevitlib\pyrevit\output\outputstyles.css"></head><html><body><div class="entry"></div><div class="entry">('Message', 'Query hitting')</div><div class="entry">
+</div><div class="entry">&lt;user_interface.Custom_Window_State instance at 0x0000000000000456&gt;</div><div class="entry">
+</div><div class="entry">Query hitting
+<br>Test</div><div class="entry">
+</div><div class="entry">('Info', 'Sending data to server: {"client": "Find all the walls in the model and return the total length of the walls. ."}')</div><div class="entry">
+</div><div class="entry">('Code response: ', 'clr.AddReference(\'RevitAPI\')\nclr.AddReference(\'RevitAPIUI\')\nfrom Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory\nfrom Autodesk.Revit.UI import TaskDialog\n\ndoc = __revit__.ActiveUIDocument.Document\n\n# Collect all the walls in the model\nwalls = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().ToElements()\n\ntotal_length = 0.0\n\n# Iterate through each wall and calculate the total length\nfor wall in walls:\n    total_length += wall.LookupParameter("Length").AsDouble()\n\n# Display the total length of the walls\nTaskDialog.Show("Total Wall Length", "The total length of all the walls in the model is: " + str(total_length) + " feet.")')</div><div class="entry">
+</div><div class="entry">Query hitting
+<br>Test
+<br>clr.AddReference('RevitAPI')
+<br>clr.AddReference('RevitAPIUI')
+<br>from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory
+<br>from Autodesk.Revit.UI import TaskDialog
+<br>
+<br>doc = __revit__.ActiveUIDocument.Document
+<br>
+<br># Collect all the walls in the model
+<br>walls = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().ToElements()
+<br>
+<br>total_length = 0.0
+<br>
+<br># Iterate through each wall and calculate the total length
+<br>for wall in walls:
+<br>    total_length += wall.LookupParameter("Length").AsDouble()
+<br>
+<br># Display the total length of the walls
+<br>TaskDialog.Show("Total Wall Length", "The total length of all the walls in the model is: " + str(total_length) + " feet.")
+</div><div class="entry">
+</div><div class="entry">('Message', 'Query hitting')</div><div class="entry">
+</div><div class="entry">&lt;user_interface.Custom_Window_State instance at 0x0000000000000457&gt;</div><div class="entry">
+</div><div class="entry">Query hitting
+<br>Test</div><div class="entry">
+</div><div class="entry">('Info', 'Sending data to server: {"client": "Find all the walls in the model and delete them. ."}')</div><div class="entry">
+</div><div class="entry">('Code response: ', "clr.AddReference('RevitAPI')\nclr.AddReference('RevitAPIUI')\nfrom Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, Transaction\nfrom Autodesk.Revit.UI import TaskDialog\n\nuidoc = __revit__.ActiveUIDocument\ndoc = uidoc.Document\n\n# Collect all the walls in the model\nwalls = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().ToElements()\n\n# Start a new transaction\nt = Transaction(doc, 'Delete all walls')\nt.Start()\n\n# Delete all the walls\nfor wall in walls:\n    doc.Delete(wall.Id)\n\nt.Commit()\n\nTaskDialog.Show('Delete Walls', 'All walls have been deleted.')")</div><div class="entry">
+</div><div class="entry">Query hitting
+<br>Test
+<br>clr.AddReference('RevitAPI')
+<br>clr.AddReference('RevitAPIUI')
+<br>from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, Transaction
+<br>from Autodesk.Revit.UI import TaskDialog
+<br>
+<br>uidoc = __revit__.ActiveUIDocument
+<br>doc = uidoc.Document
+<br>
+<br># Collect all the walls in the model
+<br>walls = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().ToElements()
+<br>
+<br># Start a new transaction
+<br>t = Transaction(doc, 'Delete all walls')
+<br>t.Start()
+<br>
+<br># Delete all the walls
+<br>for wall in walls:
+<br>    doc.Delete(wall.Id)
+<br>
+<br>t.Commit()
+<br>
+<br>TaskDialog.Show('Delete Walls', 'All walls have been deleted.')
+</div><div class="entry">
+</div><div class="entry">('Exception: ', 'Cannot set Visibility or call Show ShowDialog or WindowInteropHelperEnsureHandle after a Window has closed')</div><div class="entry">
+</div><div class="entry">Query hitting
+<br>Test
+<br>clr.AddReference('RevitAPI')
+<br>clr.AddReference('RevitAPIUI')
+<br>from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, Transaction
+<br>from Autodesk.Revit.UI import TaskDialog
+<br>
+<br>uidoc = __revit__.ActiveUIDocument
+<br>doc = uidoc.Document
+<br>
+<br># Collect all the walls in the model
+<br>walls = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Walls).WhereElementIsNotElementType().ToElements()
+<br>
+<br># Start a new transaction
+<br>t = Transaction(doc, 'Delete all walls')
+<br>t.Start()
+<br>
+<br># Delete all the walls
+<br>for wall in walls:
+<br>    doc.Delete(wall.Id)
+<br>
+<br>t.Commit()
+<br>
+<br>TaskDialog.Show('Delete Walls', 'All walls have been deleted.')
+<br>
+<br>Exception: Cannot set Visibility or call Show ShowDialog or WindowInteropHelperEnsureHandle after a Window has closed</div><div class="entry">
+</div></body></html>
