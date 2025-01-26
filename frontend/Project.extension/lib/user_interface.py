@@ -334,6 +334,8 @@ def query_chat_gpt(window):
             responseBytes = client.UploadData(url, "POST", data)
             # Convert response bytes to string using UTF-8 encoding
             responseString = Encoding.UTF8.GetString(responseBytes)
+            if isinstance(responseString, bytes):
+                responseString = responseString.decode('utf-8')
             
             if "MISSING" in responseString:
                 x = ('missing', responseString.split("-")[1])
@@ -343,6 +345,8 @@ def query_chat_gpt(window):
 
             # Clean and prepare code for execution
             clean_code = clean_code_snippet(responseString)
+            if isinstance(clean_code, bytes):
+                clean_code = clean_code.decode('utf-8')
             print("Code response: %s" % clean_code)
             state.data.append(("Code response: ", clean_code))
             
