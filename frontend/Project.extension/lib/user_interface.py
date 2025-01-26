@@ -321,11 +321,18 @@ def query_chat_gpt(window):
         try:
             # Convert Turkish characters to English equivalents
             ascii_input = convert_turkish_chars(input_string)
+            if isinstance(ascii_input, bytes):
+                ascii_input = ascii_input.decode('utf-8')
             
             # Create JSON data using Python's json module
-            json_obj = {"client": "%s. %s." % (ascii_input, context_data.context)}
+            context_str = context_data.context
+            if isinstance(context_str, bytes):
+                context_str = context_str.decode('utf-8')
+                
+            json_obj = {"client": "%s. %s." % (ascii_input, context_str)}
             json_data = json.dumps(json_obj)
             
+            # Convert to bytes for sending
             data = Encoding.UTF8.GetBytes(json_data)
             client.Headers.Add("Content-Type", "application/json; charset=utf-8")
             
@@ -364,6 +371,12 @@ def query_chat_gpt(window):
             response_type = response.get("type", "message")
             
             print("Response: %s (Type: %s)" % (response_text, response_type))
+            
+            # Convert response_text to string if needed
+            if isinstance(response_text, bytes):
+                response_text = response_text.decode('utf-8')
+            
+            # Add response to state data
             state.data.append(("Response: ", response_text))
             
             if "MISSING" in response_text:
@@ -394,7 +407,7 @@ def query_chat_gpt(window):
             else:
                 # Show as message
                 print(response_text)
-                x = ('message', response_text)
+                x = ('message', str(response_text))  # Convert to string explicitly
                 state.data.append(x)
                 window.update_state(state)
 
