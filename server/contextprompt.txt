@@ -12,8 +12,7 @@ In Python code, please make the modifications in the following 3 backticks
 Don't include newline formatting, or backticks. 
 If the query is a question, make sure to include code to print the answer to the console in the end.
 IronPython does not support f-strings, or str.format, use only basic string concatenation
-Use this line of code as is, if needed, uidoc = __revit__.ActiveUIDocument
-Use this line of code as is, if needed, selection = uidoc.Selection.GetElementIds()
+Use this line of code as is: doc = __revit__.ActiveUIDocument.Document
 When calculating lengths:
 - Use FilteredElementCollector with OfCategory and WhereElementIsNotElementType
 - Get length from element.Location.Curve.Length
@@ -21,6 +20,15 @@ When calculating lengths:
 - Convert to meters (multiply by 0.3048)
 - Round to 2 decimal places
 - Print only the final result once
+
+Example for getting duct lengths:
+doc = __revit__.ActiveUIDocument.Document
+ducts = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_DuctCurves).WhereElementIsNotElementType()
+total_length = 0.0
+for duct in ducts:
+    total_length += duct.Location.Curve.Length
+total_length = round(total_length * 0.3048, 2)
+print("Total length: " + str(total_length) + " meters")
 ```
 
 Please do not import any libraries in your response beyond those in the following 3 backticks
