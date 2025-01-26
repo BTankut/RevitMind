@@ -374,14 +374,18 @@ def query_chat_gpt(window):
                 window.update_state(state)
         
         except Exception as e:
-            response_exception = clean_response_string(str(e))
+            error_msg = str(e)
+            if isinstance(error_msg, bytes):
+                error_msg = error_msg.decode('utf-8')
+            response_exception = clean_response_string(error_msg)
             print("Exception: %s" % response_exception)
             x = ('exception', "Exception: %s" % response_exception)
             state.data.append(x)
             window.update_state(state)
         
         finally:
-            context_data.update_error_context(response_exception)
+            if 'response_exception' in locals():
+                context_data.update_error_context(response_exception)
             context_data.increment_counter()
             x = ('attempt', "Attempt: %d" % context_data.counter)
             state.data.append(x)

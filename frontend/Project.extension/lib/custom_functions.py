@@ -71,7 +71,10 @@ class ContextData:
     def update_error_context(self, error):
         """Update context with error information."""
         if error:
-            self._context = f"Previous error: {str(error)}"
+            error_msg = str(error)
+            if isinstance(error_msg, bytes):
+                error_msg = error_msg.decode('utf-8')
+            self._context = f"Previous error: {error_msg}"
         else:
             self._context = ""
 
