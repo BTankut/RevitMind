@@ -27,26 +27,21 @@ def get_completion_from_messages(messages, model="openai/gpt-4", temperature=0):
         # Prepare headers
         headers = {
             "Authorization": f"Bearer {api_key}",
-            "HTTP_REFERER": "https://github.com/BTankut/RevitMind",
-            "X-Title": "RevitMind",
-            "Accept": "application/json",
             "Content-Type": "application/json"
         }
         
         # Prepare request data
         data = {
-            "model": "openai/gpt-4-1106-preview",
+            "model": model,
             "messages": messages,
-            "temperature": temperature,
-            "stream": False
+            "temperature": temperature
         }
         
         logger.info(f"Sending request to OpenRouter API with model: {model}")
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
-            json=data,
-            timeout=30  # Add timeout
+            json=data
         )
         
         # Handle response
