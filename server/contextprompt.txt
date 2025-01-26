@@ -15,16 +15,18 @@ IronPython does not support f-strings, or str.format, use only basic string conc
 Use this line of code as is, if needed, uidoc = __revit__.ActiveUIDocument
 Use this line of code as is, if needed, selection = uidoc.Selection.GetElementIds()
 When calculating lengths:
+- Use FilteredElementCollector with OfCategory and WhereElementIsNotElementType
+- Get length from element.Location.Curve.Length
 - Collect all elements first, then calculate total
 - Convert to meters (multiply by 0.3048)
 - Round to 2 decimal places
-- Print only the final result
+- Print only the final result once
 ```
 
 Please do not import any libraries in your response beyond those in the following 3 backticks
 ```
 clr
-Autodesk.Revit.DB
+from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory
 ```
 
 Do not write code if any of the following conditions are met in the following 3 backticks 
