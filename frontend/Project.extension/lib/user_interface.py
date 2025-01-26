@@ -11,6 +11,9 @@ clr.AddReference('IronPython.Wpf')
 clr.AddReference('PresentationCore')
 clr.AddReference('PresentationFramework')
 clr.AddReference('System.Windows.Forms')
+clr.AddReference('RevitAPI')
+
+from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, UnitUtils, DisplayUnitType
 
 from Autodesk.Revit.Exceptions import InvalidOperationException
 from System.Windows.Controls.Primitives import BulletDecorator
@@ -348,16 +351,14 @@ def query_chat_gpt(window):
                 # Create a new namespace for execution with globals
                 namespace = globals().copy()
                 # Add required imports
-                namespace['clr'] = clr
-                namespace['__revit__'] = __revit__
-                # Add Revit API imports
-                exec("""
-import clr
-clr.AddReference('RevitAPI')
-from Autodesk.Revit.DB import *
-from Autodesk.Revit.DB.Mechanical import *
-from Autodesk.Revit.DB.Plumbing import *
-""", namespace)
+                namespace.update({
+                    'clr': clr,
+                    '__revit__': __revit__,
+                    'BuiltInCategory': BuiltInCategory,
+                    'FilteredElementCollector': FilteredElementCollector,
+                    'UnitUtils': UnitUtils,
+                    'DisplayUnitType': DisplayUnitType
+                })
                 # Execute the code in the namespace
                 exec(clean_code, namespace)
             except Exception as exec_error:
