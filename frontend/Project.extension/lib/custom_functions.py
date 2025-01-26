@@ -2,6 +2,7 @@ class ContextData:
     def __init__(self):
         self._context = ""  # Notice the underscore, it denotes a private attribute
         self._counter = 1
+        self._selected_elements = []
 
     @property
     def context(self):
@@ -34,6 +35,45 @@ class ContextData:
     def increment_counter(self):
         """Increment the counter property by 1."""
         self._counter += 1
+
+    def update_selected_elements(self, elements):
+        """Update the selected elements and their properties in context."""
+        self._selected_elements = elements
+        if elements:
+            context_parts = []
+            for element in elements:
+                try:
+                    # Get basic element info
+                    element_type = element.GetType().Name
+                    element_id = element.Id.IntegerValue
+                    
+                    # Try to get common parameters
+                    try:
+                        family = element.Symbol.Family.Name if hasattr(element, 'Symbol') else None
+                        level = element.LevelId if hasattr(element, 'LevelId') else None
+                        context_parts.append(f"Selected {element_type} (ID: {element_id})")
+                        if family:
+                            context_parts.append(f"Family: {family}")
+                        if level:
+                            context_parts.append(f"Level: {level}")
+                    except:
+                        # If getting detailed info fails, just add basic info
+                        context_parts.append(f"Selected {element_type} (ID: {element_id})")
+                except:
+                    # If everything fails, add generic message
+                    context_parts.append("Selected element (details unavailable)")
+            
+            # Update context with element info
+            self._context = " | ".join(context_parts)
+        else:
+            self._context = ""
+
+    def update_error_context(self, error):
+        """Update context with error information."""
+        if error:
+            self._context = f"Previous error: {str(error)}"
+        else:
+            self._context = ""
 
 def clean_response_string(response):
     # Convert bytes to string if needed

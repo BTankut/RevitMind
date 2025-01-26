@@ -31,7 +31,7 @@ from pyrevit import forms
 from pyrevit import UI
 from pyrevit import script
 
-from custom_functions import clean_code_snippet, clean_response_string
+from custom_functions import clean_code_snippet, clean_response_string, ContextData
 
 
 # ----------------------------
@@ -270,10 +270,9 @@ def convert_turkish_chars(text):
 
 def query_chat_gpt(window):    
     state = Custom_Window_State()
+    context_data = ContextData()
 
- 
     input_string = window.MyTextBox.Text
-
 
     if input_string == "enter prompt...":
         window.FindName("myTextBlock").Text = "CANT USE DEFAULT STRING"
@@ -282,7 +281,13 @@ def query_chat_gpt(window):
     window.FindName("myTextBlock").Text = "HELLO"
  
     try:
-        x=('Message', 'Query hitting')
+        # Get selected elements
+        uidoc = __revit__.ActiveUIDocument
+        if uidoc:
+            selection = [uidoc.Document.GetElement(id) for id in uidoc.Selection.GetElementIds()]
+            context_data.update_selected_elements(selection)
+
+        x = ('Message', 'Query hitting')
         print(x)
         state.data.append(x)
         
@@ -290,7 +295,6 @@ def query_chat_gpt(window):
         for status, message in state.data:
             output.append(message)
             formatted_display = '\n'.join(output)
-
             window.FindName("myTextBlock").Text = formatted_display
         
         print(state)
@@ -302,22 +306,21 @@ def query_chat_gpt(window):
     except Exception as error:
         # handle the exception
         window.logger.error("An exception occurred: %s" % error)
+        context_data.update_error_context(error)
 
     max_attempts = 10
-    counter = 1
-    context = ""
     url = 'http://127.0.0.1:8080/'
 
     client = WebClient()
 
 
-    while counter <= max_attempts:
+    while context_data.counter <= max_attempts:
         try:
             # Convert Turkish characters to English equivalents
             ascii_input = convert_turkish_chars(input_string)
             
             # Create JSON data using Python's json module
-            json_obj = {"client": "%s. %s." % (ascii_input, context)}
+            json_obj = {"client": "%s. %s." % (ascii_input, context_data.context)}
             json_data = json.dumps(json_obj)
             
             data = Encoding.UTF8.GetBytes(json_data)
@@ -378,12 +381,12 @@ def query_chat_gpt(window):
             window.update_state(state)
         
         finally:
-            context = "Consider this error: %s" % response_exception
-            counter += 1
-            x = ('attempt', "Attempt: %d" % counter)
+            context_data.update_error_context(response_exception)
+            context_data.increment_counter()
+            x = ('attempt', "Attempt: %d" % context_data.counter)
             state.data.append(x)
             window.update_state(state)
-            if counter > max_attempts:
+            if context_data.counter > max_attempts:
                 print("Maximum attempts reached. Exiting.")
                 x = ('failure', "Maximum attempts reached. Exiting.")
                 state.data.append(x)
