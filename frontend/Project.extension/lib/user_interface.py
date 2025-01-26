@@ -345,8 +345,17 @@ def query_chat_gpt(window):
             
             # Execute the code in a safe way
             try:
-                # Create a new namespace for execution
-                namespace = {}
+                # Create a new namespace for execution with globals
+                namespace = globals().copy()
+                # Add required imports
+                namespace['clr'] = clr
+                namespace['__revit__'] = __revit__
+                # Add Revit API imports
+                exec("""
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+""", namespace)
                 # Execute the code in the namespace
                 exec(clean_code, namespace)
             except Exception as exec_error:
