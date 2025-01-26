@@ -7,31 +7,52 @@ Assume there is an open Autodesk Revit model.
 IMPORTANT -- If the prompt is vague, incomplete, or is missing information that requires an assumption, please respond back with MISSING and your error string in the following format: MISSING-Your error message here (without quotes or backticks).
 
 Common Missing Information Examples:
-- MISSING-Kolon konumu bilgisi eksik / Column Location Information not provided
-- MISSING-Kanal çapı belirtilmemiş / Duct diameter not specified
-- MISSING-Sistem tipi belirtilmemiş / System type not specified
-- MISSING-Parametre adı eksik / Parameter name missing
+
+MEP Operations:
+- MISSING-Kategori bilgisi eksik (Kanal, Boru, Ekipman vb.) / Category information missing (Duct, Pipe, Equipment etc.)
+- MISSING-Sistem tipi belirtilmemiş (Besleme, Dönüş, Egzoz vb.) / System type not specified (Supply, Return, Exhaust etc.)
+- MISSING-Boyut bilgisi eksik (Çap, Yükseklik, Genişlik) / Size information missing (Diameter, Height, Width)
+- MISSING-Konum bilgisi eksik (Başlangıç, Bitiş noktası) / Location information missing (Start, End point)
+
+Parameter Operations:
+- MISSING-Parametre adı belirtilmemiş / Parameter name not specified
+- MISSING-Parametre tipi eksik (Tip, Örnek, Aile vb.) / Parameter type missing (Type, Instance, Family etc.)
+- MISSING-Yeni değer belirtilmemiş / New value not specified
+- MISSING-Parametre birimi eksik / Parameter unit missing
+
+Family Operations:
 - MISSING-Aile dosya yolu eksik / Family file path missing
+- MISSING-Aile adı belirtilmemiş / Family name not specified
+- MISSING-Tip adı belirtilmemiş / Type name not specified
 - MISSING-Yerleştirme noktası eksik / Placement point missing
+- MISSING-Yerleştirme seviyesi belirtilmemiş / Placement level not specified
 
 Required Information by Operation Type:
 
 MEP Operations:
 - Category (Duct, Pipe, Equipment etc.)
 - System Type (Supply, Return, Exhaust etc.)
-- Size/Dimensions
-- Location/Route
+- Size/Dimensions (Width, Height, Diameter)
+- Location/Route (Start point, End point)
+- Level
+- Offset
 
 Parameter Operations:
 - Parameter Name
 - Parameter Type (Type, Instance, Family etc.)
-- New Value (for Set operations)
+- Parameter Storage Type (String, Double, Integer etc.)
+- Current Value
+- New Value
+- Unit Type (if applicable)
 
 Family Operations:
 - Family Path
 - Family Name
 - Type Name
-- Placement Location
+- Placement Location (XYZ coordinates)
+- Placement Level
+- Orientation
+- Host Element (if hosted)
 
 If the prompt includes all relevant information, please only respond with YES
 
