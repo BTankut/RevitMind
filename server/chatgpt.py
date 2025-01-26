@@ -9,10 +9,29 @@ logger = logging.getLogger(__name__)
 
 def callToOpenAI(userprompt):
     try:
+        # First check with preprompt
         prepromptresponse = collect_messages(userprompt, getContext('contextpreprompt.txt'))
-        if "MISSING" in prepromptresponse or "missing" in prepromptresponse:
+        prepromptresponse = prepromptresponse.strip()
+        
+        # If preprompt says YES, get the greeting from contextprompt
+        if prepromptresponse == "YES":
+            contextprompt = getContext('contextprompt.txt')
+            # Find the matching greeting
+            for line in contextprompt.split('\n'):
+                if userprompt.lower() in line.lower() and 'respond with:' in line.lower():
+                    return line.split('respond with:')[1].strip()
+            
+            # If no matching greeting found, use default
+            return "Merhaba! Size nasıl yardımcı olabilirim?"
+        
+        # If it's a MISSING response, return it
+        if prepromptresponse.startswith("MISSING-"):
             return prepromptresponse
-
+            
+        # If preprompt didn't say YES or MISSING, something went wrong
+        return "MISSING-Beklenmeyen cevap formatı"
+        
+        # Only if preprompt says YES, proceed with main prompt
         return collect_messages(userprompt, getContext('contextprompt.txt'))
     except Exception as e:
         logger.error(f"Error in callToOpenAI: {str(e)}")
