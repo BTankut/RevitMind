@@ -98,9 +98,20 @@ def clean_code_snippet(snippet):
         if len(code_blocks) >= 3:  # Has start and end markers
             snippet = code_blocks[1]  # Take content between first pair of markers
     
-    # Check if it's code
+    # Clean up the snippet
     snippet = snippet.strip()
-    if snippet.startswith(('import', 'from', 'doc =', 'clr.')):
+    # Remove quotes and normalize line endings
+    snippet = snippet.replace('"', '').replace("'", '').replace('\r\n', '\n')
+    
+    # Check if it's Python code
+    has_python_keywords = any(keyword in snippet for keyword in [
+        'import ', 'from ', 'def ', 'class ', 'for ', 'while ', 'if ', 'else:', 'try:', 'except:',
+        'return ', 'print(', 'doc =', 'clr.'
+    ])
+    has_python_syntax = '=' in snippet or ':' in snippet or '(' in snippet
+    looks_like_code = has_python_keywords and has_python_syntax
+    
+    if looks_like_code:
         # Split the snippet into lines
         lines = []
         current_indent = 0
