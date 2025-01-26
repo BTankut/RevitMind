@@ -350,38 +350,11 @@ def query_chat_gpt(window):
                 responseString = responseString.decode('utf-8')
             
             # Parse JSON response
-            try:
-                # First try to parse as is
-                print("Trying to parse response: %s" % responseString)
-                response = json.loads(responseString)
-            except Exception as json_error:
-                print("JSON parse error: %s" % str(json_error))
-                # If that fails, try to decode bytes first
-                if isinstance(responseString, bytes):
-                    print("Response is bytes, decoding...")
-                    responseString = responseString.decode('utf-8')
-                try:
-                    print("Trying to parse decoded response: %s" % responseString)
-                    response = json.loads(responseString)
-                except Exception as decode_error:
-                    print("JSON parse error after decode: %s" % str(decode_error))
-                    # If all parsing fails, create our own response object
-                    response = {
-                        "response": responseString,
-                        "type": "message"
-                    }
-            
-            print("Final response object: %s" % str(response))
-            response_text = response.get("response", responseString)
-            response_type = response.get("type", "message")
+            response = json.loads(responseString)
+            response_text = response["response"]
+            response_type = response["type"]
             
             print("Response: %s (Type: %s)" % (response_text, response_type))
-            
-            # Convert response_text to string if needed
-            if isinstance(response_text, bytes):
-                response_text = response_text.decode('utf-8')
-            
-            # Add response to state data
             state.data.append(("Response: ", response_text))
             
             if "MISSING" in response_text:
@@ -412,7 +385,7 @@ def query_chat_gpt(window):
             else:
                 # Show as message
                 print(response_text)
-                x = ('message', str(response_text))  # Convert to string explicitly
+                x = ('message', response_text)
                 state.data.append(x)
                 window.update_state(state)
 

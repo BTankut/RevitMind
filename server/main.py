@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify
 import json
 from chatgpt import *
 
@@ -23,17 +23,10 @@ def send_msg():
         except json.JSONDecodeError:
             return jsonify({"error": "Invalid JSON format"}), 400
         
-        print(usermsg)
-        
         if not isinstance(usermsg, dict) or 'client' not in usermsg:
             return jsonify({"error": "Missing 'client' field"}), 400
             
         airesponse = callToOpenAI(usermsg['client'])
-        print(airesponse)
-        
-        # Convert response to JSON
-        if isinstance(airesponse, bytes):
-            airesponse = airesponse.decode('utf-8')
         
         # Return response as JSON
         return jsonify({
