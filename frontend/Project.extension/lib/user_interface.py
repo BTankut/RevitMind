@@ -338,9 +338,17 @@ def query_chat_gpt(window):
                 responseString = responseString.decode('utf-8')
             
             # Parse JSON response
-            response = json.loads(responseString)
-            response_text = response["response"]
-            response_type = response["type"]
+            try:
+                # First try to parse as is
+                response = json.loads(responseString)
+            except:
+                # If that fails, try to decode bytes first
+                if isinstance(responseString, bytes):
+                    responseString = responseString.decode('utf-8')
+                response = json.loads(responseString)
+            
+            response_text = response.get("response", responseString)  # Fallback to full response if no "response" field
+            response_type = response.get("type", "message")  # Default to message type
             
             print("Response: %s (Type: %s)" % (response_text, response_type))
             state.data.append(("Response: ", response_text))
