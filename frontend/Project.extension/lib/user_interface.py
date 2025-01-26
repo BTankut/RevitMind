@@ -355,6 +355,8 @@ def query_chat_gpt(window):
 import clr
 clr.AddReference('RevitAPI')
 from Autodesk.Revit.DB import *
+from Autodesk.Revit.DB.Mechanical import *
+from Autodesk.Revit.DB.Plumbing import *
 """, namespace)
                 # Execute the code in the namespace
                 exec(clean_code, namespace)
