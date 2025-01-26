@@ -24,24 +24,24 @@ def get_completion_from_messages(messages, model="openai/gpt-4", temperature=0):
         with open(os.path.join(os.path.dirname(__file__), "chatgptapikey.env"), "r") as f:
             api_key = f.read().strip()
         
-        # Prepare headers
+        # Prepare headers - Keep it simple
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
-        # Prepare request data
+        # Prepare request data - Basic format
         data = {
             "model": model,
-            "messages": messages,
-            "temperature": temperature
+            "messages": messages
         }
         
         logger.info(f"Sending request to OpenRouter API with model: {model}")
         response = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers=headers,
-            json=data
+            json=data,
+            timeout=30
         )
         
         # Handle response
