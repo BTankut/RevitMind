@@ -1,0 +1,29 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/.git": true,
+            "**/.vs": true,
+            "**/bin": true,
+            "**/obj": true,
+            "**/__pycache__": true
+        },
+        "files.associations": {
+            "*.xaml": "xml"
+        },
+        "python.analysis.extraPaths": [
+            "./frontend/Project.extension/lib"
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-python.python",
+            "ms-python.vscode-pylance",
+            "redhat.vscode-xml"
+        ]
+    }
+}
