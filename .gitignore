@@ -1,16 +1,58 @@
-# API Keys
-server/chatgptapikey.env
-
 # Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
 
 # IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 .vs/
-*.vsidx
 *.suo
-*.cache
+*.user
+*.userosscache
+*.sln.docstates
 
-# Temp files
+# Logs
 *.log
-temp.html
+logs/
+test_results/
+*.coverage
+.coverage
+htmlcov/
+
+# Environment Variables
+*.env
+.env
+.env.*
+
+# Revit
+*.rfa
+*.rvt
+*.0*
+*.bak
+
+# Custom
+server/chatgptapikey.env
+tests/logs/

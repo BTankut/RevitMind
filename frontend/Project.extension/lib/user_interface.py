@@ -2,6 +2,8 @@
 import os
 import json
 
+print("Loading user_interface.py from:", os.path.abspath(__file__))
+
 import clr
 clr.AddReference('System')
 clr.AddReference('System.Net')
@@ -13,8 +15,10 @@ clr.AddReference('PresentationFramework')
 clr.AddReference('System.Windows.Forms')
 clr.AddReference('RevitAPI')
 
-from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, UnitUtils, DisplayUnitType
+print("Debug - Loading Revit API modules...")
+from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, UnitUtils
 
+print("Debug - Loading Revit exceptions...")
 from Autodesk.Revit.Exceptions import InvalidOperationException
 from System.Windows.Controls.Primitives import BulletDecorator
 from System.Windows.Media.Imaging import BitmapImage
@@ -34,48 +38,22 @@ from pyrevit import forms
 from pyrevit import UI
 from pyrevit import script
 
-from custom_functions import clean_code_snippet, clean_response_string, ContextData
-
-
-# ----------------------------
-# Magic
-# ----------------------------
-'''
-Code borrowed from: 
-https://github.com/CyrilWaechter/pyRevitMEP/blob/master/pyRevitMEP.tab/Samples.panel/Samples.pulldown/FormExternalEventHandler.pushbutton/script.py
-'''
+from custom_functions import ContextData
 
 
 class CustomizableEvent:
     def __init__(self):
-        """ An instance of this class need to be created before any modeless operation.
-        You can then call the raise_event method to perform any modeless operation.
-        Any modification to Revit DB need to be performed inside a valid Transaction.
-        This Transaction needs to be open inside the function_or_method, NOT before calling raise_event.
-        """
-        # Create an handler instance and his associated ExternalEvent
         custom_handler = _CustomHandler()
         custom_handler.customizable_event = self
         self.custom_event = UI.ExternalEvent.Create(custom_handler)
-
-        # Initialise raise_event variables
         self.function_or_method = None
         self.args = ()
         self.kwargs = {}
 
     def _raised_method(self):
-        """ !!! DO NOT USE THIS METHOD IN YOUR SCRIPT !!!
-        Method executed by IExternalEventHandler.Execute when ExternalEvent is raised by ExternalEvent.Raise.
-        """
         self.function_or_method(*self.args, **self.kwargs)
 
     def raise_event(self, function_or_method, *args, **kwargs):
-        """
-        Method used to raise an external event with custom function and parameters
-        Example :
-        >>> customizable_event = CustomizableEvent()
-        >>> customizable_event.raise_event(rename_views, views_and_names)
-        """
         self.args = args
         self.kwargs = kwargs
         self.function_or_method = function_or_method
@@ -83,160 +61,80 @@ class CustomizableEvent:
 
 
 class _CustomHandler(UI.IExternalEventHandler):
-    """ Subclass of IExternalEventHandler intended to be used in CustomizableEvent class
-    Input : function or method. Execute input in a IExternalEventHandler"""
-
     def __init__(self):
         self.customizable_event = None
 
-    # Execute method run in Revit API environment.
-    # noinspection PyPep8Naming, PyUnusedLocal
     def Execute(self, application):
         try:
             self.customizable_event._raised_method()
         except InvalidOperationException:
-            # If you don't catch this exeption Revit may crash.
-            print("InvalidOperationException catched")
+            print("InvalidOperationException caught")
 
-    # noinspection PyMethodMayBeStatic, PyPep8Naming
     def GetName(self):
-        return "Execute an function or method in a IExternalHandler"
+        return "Execute function in IExternalHandler"
 
 
 custom_event = CustomizableEvent()
 
-# ----------------------------
-# Custom UI Window
-# ----------------------------
-
 
 class CustomWindow(forms.WPFWindow):
     def __init__(self):
-        # Set clean state for new window
         self.state = Custom_Window_State()
-
-        # Fix WPF Resource Dictionary - Not needed
-        #self.resolve_wpf_resource()
         self.current_dir = os.path.dirname(__file__)
         self.output = script.get_output()
         self.logger = script.get_logger()
+        self.Uid = "ClippyAIWindow"  # Add unique ID for window tracking
 
     def setup(self):
-        #self.resolve_images()
-        # Fix linked image resources - Not needed
-        #self.resolve_browser_paths()
         pass
 
-    def resolve_wpf_resource(self):
-        """Function to add WPF resources."""
-        dir_path = os.path.dirname(__file__)
-        path_styles = os.path.join(dir_path, './resources/WPF_styles.xaml')
-        r = ResourceDictionary()
-        r.Source = Uri(path_styles)
-        self.Resources = r
-
-        return None
-
-    def resolve_images(self):
-        """Add assets folder too"""
-        dir_path = os.path.dirname(__file__)
-        
-        
-        gifs = [
-            {"xaml_name": "clippy_blink_animation", "folder": "assets/clippy_blink"},
-            {"xaml_name": "clippy_blink_animation", "folder": "assets/clippy_blink"},
-            {"xaml_name": "clippy_blink_animation", "folder": "assets/clippy_blink"},
-        ]
-
-        for gif in gifs:
-            folder_path = os.path.join(dir_path, gif["folder"])
-            animation_keyframe_collection_name = getattr(self, gif["xaml_name"])
-            #self.set_image_source(wpf_img_element, path_to_asset)
-        
-        
-        try:
-            animation_keyframe_collection = self.FindName("clippy_blink_animation")
-            animation_keyframes = animation_keyframe_collection.KeyFrames
-
-            for keyframe in animation_keyframes:
-                print(type(keyframe))
-                if type(keyframe) == DiscreteObjectKeyFrame:
-                    hopefully_bitmap = keyframe.Value
-                    print(type(hopefully_bitmap))
-                    if type(hopefully_bitmap) == BitmapImage:
-                        initial_source = hopefully_bitmap.UriSource
-                        filename, file_extension = os.path.splitext(initial_source)
-                        BitmapImage.UriSource(os.path.join(dir_path, "assets/clippy_blink", filename + file_extension))
-        
-        except Exception as error:
-            # handle the exception
-            print("An exception occurred: %s" % error)
-        
-        else:
-            print("Nothing went wrong")
-            self.logger.warning("All good")
-
-        return None
-
-    def resolve_browser_paths(self):
-        """Add assets folder too"""
-        dir_path = os.path.dirname(__file__)
-
-        paths = [
-            {"xaml_name": "clippy_gif", "relative_path": "./assets/clippy_gif.gif"},
-        ]
-
-        for path in paths:
-            path_to_asset = os.path.join("file:///", dir_path, path["relative_path"])
-            wpf_img_element = getattr(self, path["xaml_name"])
-
-            wpf_img_element.Source = path_to_asset
-            print(path_to_asset)
-
-        return None
-    
     def update_state(self, new_state):
-        #print("New state set...")
-
         self.state = new_state
-        #update main display 
-
         self.render_custom_ui()
-        
-        # Update the UI
         self.show()
 
-    # ------------------
-    # View updaters - Create UI text based on data within this instance
-    # ------------------
     def render_custom_ui(self):
-        #update debug html
-        temphtml_path = os.path.join(self.current_dir, 'temp.html')
-        self.output.save_contents(temphtml_path)
-        htmlContent = Read_file_incurrent_directory_to_string(temphtml_path)    
-        self.DebugDisplay.NavigateToString(htmlContent)
+        try:
+            # Update debug display
+            temphtml_path = os.path.join(self.current_dir, 'temp.html')
+            self.output.save_contents(temphtml_path)
+            htmlContent = Read_file_incurrent_directory_to_string(temphtml_path)    
+            self.DebugDisplay.NavigateToString(htmlContent)
 
-        ds = self.state.data
-        
-        output_messages = []
+            # Process messages
+            messages = []
+            for status, message in self.state.data:
+                try:
+                    # Handle bytes or string
+                    if isinstance(message, bytes):
+                        message = message.decode('utf-8')
+                    elif message is None:
+                        continue
+                        
+                    # Format based on status
+                    if status == 'error':
+                        messages.append("Error: " + str(message))
+                    elif status == 'info':
+                        messages.append("Info: " + str(message))
+                    elif status == 'message':
+                        messages.append(str(message))
+                    else:
+                        messages.append(str(message))
+                except Exception as e:
+                    print("Error processing message:", str(e))
+                    continue
 
-        for item in ds:
-            (status, message) = item
-            # Ensure message is string
-            if isinstance(message, bytes):
-                message = message.decode('utf-8')
-            output_messages.append(str(message))
+            # Update text display
+            if messages:
+                formatted_display = '\n'.join(messages)
+                print("Debug - Formatted display:", formatted_display)
+                self.myTextBlock.Text = formatted_display
+            else:
+                self.myTextBlock.Text = ""
+        except Exception as e:
+            print("Error in render_custom_ui:", str(e))
+            self.myTextBlock.Text = "Error displaying messages"
 
-        # Update what the user sees
-        formatted_display = '\n'.join(str(msg) for msg in output_messages)
-
-        print(formatted_display)
-        self.myTextBlock.Text = str(formatted_display)
-
-
-    # ------------------
-    # UI Functionality - Button Controllers
-    # ------------------
     def click_submit(self, sender, e):
         custom_event.raise_event(query_chat_gpt, self)
 
@@ -244,190 +142,128 @@ class CustomWindow(forms.WPFWindow):
 class Custom_Window_State():
     def __init__(self):
         self.data = []
-        
 
-
-# ----------------------------
-# Functions called by UI buttons
-# ----------------------------
 
 def Read_file_incurrent_directory_to_string(file_path):
      try:
           with open(file_path, 'r') as file:
-               html_code = file.read()
-          return html_code
-     
+               return file.read()
      except Exception as e:
-        print("Error reading file: %s" % e)
+        print("Error reading file: %s" % str(e))
         return None
 
-def convert_turkish_chars(text):
-    tr_chars = {
-        'ü': 'u', 'Ü': 'U',
-        'ö': 'o', 'Ö': 'O',
-        'ı': 'i', 'İ': 'I',
-        'ğ': 'g', 'Ğ': 'G',
-        'ş': 's', 'Ş': 'S',
-        'ç': 'c', 'Ç': 'C'
-    }
-    for tr_char, en_char in tr_chars.items():
-        text = text.replace(tr_char, en_char)
-    return text
+
+def send_request(url, data):
+    """Send a request with proper encoding"""
+    try:
+        json_data = json.dumps(data)
+        encoded_data = Encoding.UTF8.GetBytes(json_data)
+        
+        request = WebRequest.Create(url)
+        request.Method = "POST"
+        request.ContentType = "application/json"
+        request.ContentLength = len(encoded_data)
+        
+        request_stream = request.GetRequestStream()
+        request_stream.Write(encoded_data, 0, len(encoded_data))
+        request_stream.Close()
+        
+        response = request.GetResponse()
+        response_stream = response.GetResponseStream()
+        reader = StreamReader(response_stream)
+        return reader.ReadToEnd()
+    except Exception as e:
+        print("Error in send_request: %s" % str(e))
+        raise
+
+
+def prepare_request_data(input_string):
+    """Prepare request data"""
+    if isinstance(input_string, bytes):
+        input_string = input_string.decode('utf-8')
+    return {"client": str(input_string)}
+
+
+def handle_response(response_text):
+    """Parse JSON response"""
+    if isinstance(response_text, bytes):
+        response_text = response_text.decode('utf-8')
+    return json.loads(response_text)
+
 
 def query_chat_gpt(window):    
     state = Custom_Window_State()
-    context_data = ContextData()
 
+    # Get input
     input_string = window.MyTextBox.Text
-
     if input_string == "enter prompt...":
         window.FindName("myTextBlock").Text = "CANT USE DEFAULT STRING"
         return
 
-    window.FindName("myTextBlock").Text = "HELLO"
- 
-    try:
-        # Get selected elements
-        uidoc = __revit__.ActiveUIDocument
-        if uidoc:
-            selection = [uidoc.Document.GetElement(id) for id in uidoc.Selection.GetElementIds()]
-            context_data.update_selected_elements(selection)
+    # Show processing
+    window.FindName("myTextBlock").Text = "Processing..."
+    state = Custom_Window_State()
 
-            x = ('Message', str('Query hitting'))
-            print(x)
-            state.data.append(x)
-            
-            output = []
-            for status, message in state.data:
-                if isinstance(message, bytes):
-                    message = message.decode('utf-8')
-                output.append(str(message))
-                formatted_display = '\n'.join(str(msg) for msg in output)
-                window.FindName("myTextBlock").Text = str(formatted_display)
-        
-        print(state)
-
-        x = ('successful', 'Test')
-        state.data.append(x)
-        window.update_state(state)
-
-    except Exception as error:
-        # handle the exception
-        window.logger.error("An exception occurred: %s" % error)
-        context_data.update_error_context(error)
-
-    max_attempts = 10
+    # Server config
     url = 'http://127.0.0.1:8080/'
+    max_attempts = 3
+    attempt = 1
 
-    client = WebClient()
-
-
-    while context_data.counter <= max_attempts:
+    # Try to get response
+    while attempt <= max_attempts:
         try:
-            # Convert Turkish characters to English equivalents
-            ascii_input = convert_turkish_chars(input_string)
-            if isinstance(ascii_input, bytes):
-                ascii_input = ascii_input.decode('utf-8')
+            # Prepare request
+            request_data = prepare_request_data(input_string)
+            print("Info: Sending data to server: %s" % json.dumps(request_data))
             
-            # Create JSON data using Python's json module
-            context_str = context_data.context
-            if isinstance(context_str, bytes):
-                context_str = context_str.decode('utf-8')
-                
-            json_obj = {"client": "%s. %s." % (ascii_input, context_str)}
-            json_data = json.dumps(json_obj)
+            # Send request and get response
+            response_text = send_request(url, request_data)
+            response = handle_response(response_text)
             
-            # Convert to bytes for sending
-            data = Encoding.UTF8.GetBytes(json_data)
-            client.Headers.Add("Content-Type", "application/json; charset=utf-8")
-            
-            print("Info: Sending data to server: %s" % json_data)
-
-            responseBytes = client.UploadData(url, "POST", data)
-            # Convert response bytes to string using UTF-8 encoding
-            responseString = Encoding.UTF8.GetString(responseBytes)
-            if isinstance(responseString, bytes):
-                responseString = responseString.decode('utf-8')
-            
-            # Parse JSON response
-            response = json.loads(responseString)
-            response_text = response["response"]
-            response_type = response["type"]
-            
+            # Get response text and type
+            response_text = str(response["response"])
+            response_type = str(response["type"])
             print("Response: %s (Type: %s)" % (response_text, response_type))
-            state.data.append(("Response: ", response_text))
             
+            # Handle MISSING responses
             if "MISSING" in response_text:
-                x = ('missing', response_text.split("-")[1])
-                state.data.append(x)
+                missing_text = response_text.split("-")[1]
+                state.data.append(('info', missing_text))
                 window.update_state(state)
-                return # unsuccessful
+                return
             
+            # Handle code responses
             if response_type == "code":
-                # Execute the code in a safe way
                 try:
-                    # Create a new namespace for execution with globals
+                    # Prepare Revit API namespace
                     namespace = globals().copy()
-                    # Add required imports
                     namespace.update({
                         'clr': clr,
                         '__revit__': __revit__,
                         'BuiltInCategory': BuiltInCategory,
                         'FilteredElementCollector': FilteredElementCollector,
-                        'UnitUtils': UnitUtils,
-                        'DisplayUnitType': DisplayUnitType
+                        'UnitUtils': UnitUtils
                     })
-                    # Execute the code in the namespace
+                    # Execute code
                     exec(response_text, namespace)
+                    # Show success message
+                    state.data.append(('successful', 'Code executed successfully'))
                 except Exception as exec_error:
                     print("Error executing code: %s" % str(exec_error))
-                    raise
+                    state.data.append(('error', str(exec_error)))
+            # Handle message responses
             else:
-                # Show as message
-                print(response_text)
-                x = ('message', response_text)
-                state.data.append(x)
-                window.update_state(state)
-
-            x = ('successful', '')
-            state.data.append(x)
+                state.data.append(('message', response_text))
+            
             window.update_state(state)
-            return  # Successful execution, exit the loop
-        
-        except WebException as webEx:
-            if webEx.Response is not None:
-                responseStream = webEx.Response.GetResponseStream()
-                if responseStream is not None:
-                    reader = StreamReader(responseStream)
-                    errorMessage = reader.ReadToEnd()
-                    response_exception = clean_response_string(errorMessage)
-                    x = ('exception', "Server error response: %s" % response_exception)
-                    state.data.append(x)
-                    window.update_state(state)
-            else:
-                x = ('exception', "WebException without response: %s" % webEx.Message)
-                state.data.append(x)
-                window.update_state(state)
+            return
         
         except Exception as e:
-            error_msg = str(e)
-            if isinstance(error_msg, bytes):
-                error_msg = error_msg.decode('utf-8')
-            response_exception = clean_response_string(error_msg)
-            print("Exception: %s" % response_exception)
-            x = ('exception', "Exception: %s" % response_exception)
-            state.data.append(x)
+            print("Error: %s" % str(e))
+            state.data.append(('error', str(e)))
             window.update_state(state)
-        
-        finally:
-            if 'response_exception' in locals():
-                context_data.update_error_context(response_exception)
-            context_data.increment_counter()
-            x = ('attempt', "Attempt: %d" % context_data.counter)
-            state.data.append(x)
-            window.update_state(state)
-            if context_data.counter > max_attempts:
-                print("Maximum attempts reached. Exiting.")
-                x = ('failure', "Maximum attempts reached. Exiting.")
-                state.data.append(x)
-                break  # Ensure to break out of the loop
+            attempt += 1
+            if attempt > max_attempts:
+                state.data.append(('failure', "Maximum attempts reached"))
+                window.update_state(state)
+                break

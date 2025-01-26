@@ -4,15 +4,9 @@ We are verifying whether there is enough information to write an IronPython scri
 
 Assume there is an open Autodesk Revit model.
 
-IMPORTANT -- If the prompt is vague, incomplete, or is missing information that requires an assumption, please respond back with MISSING and your error string in the following format in the following format: MISSING-Your error message here (without quotes or backticks). An example could be MISSING-Kolon konumu bilgisi eksik or MISSING-Column Location Information not provided.
+IMPORTANT -- If the prompt is vague, incomplete, or is missing information that requires an assumption, please respond back with MISSING and your error string in the following format: MISSING-Your error message here (without quotes or backticks). An example could be MISSING-Kolon konumu bilgisi eksik or MISSING-Column Location Information not provided.
 
 If the prompt includes all relevant information, please only respond with YES
-
-For greetings and simple messages:
-- If user says "merhaba", respond with YES
-- If user says "hello", respond with YES
-- If user asks "nasılsın", respond with YES
-- If user says "how are you", respond with YES
 
 Please only write text that says MISSING-your error message or YES (without quotes or backticks)
 
