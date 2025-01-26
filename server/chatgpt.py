@@ -12,18 +12,22 @@ def callToOpenAI(userprompt):
     return collect_messages(userprompt, getContext('contextprompt.txt'))
 
 def get_completion_from_messages(messages, model="openai/gpt-4", temperature=0):
-    with open("chatgptapikey.env", "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), "chatgptapikey.env"), "r") as f:
         api_key = f.read().strip()
     
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://github.com/BTankut/RevitMind",
+        "X-Title": "RevitMind"
     }
     
     data = {
         "model": model,
         "messages": messages,
-        "temperature": temperature
+        "temperature": temperature,
+        "route": "openai",
+        "safe_mode": False
     }
     
     response = requests.post(
@@ -48,5 +52,5 @@ def setOpenAiKey():
     pass
 
 def getContext(filename):
-    with open(filename, "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), filename), "r") as f:
         return f.read()
