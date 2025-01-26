@@ -222,13 +222,16 @@ class CustomWindow(forms.WPFWindow):
 
         for item in ds:
             (status, message) = item
-            output_messages.append(message)
+            # Ensure message is string
+            if isinstance(message, bytes):
+                message = message.decode('utf-8')
+            output_messages.append(str(message))
 
         # Update what the user sees
-        formatted_display = '\n'.join(output_messages)
+        formatted_display = '\n'.join(str(msg) for msg in output_messages)
 
         print(formatted_display)
-        self.myTextBlock.Text = formatted_display
+        self.myTextBlock.Text = str(formatted_display)
 
 
     # ------------------
@@ -290,15 +293,17 @@ def query_chat_gpt(window):
             selection = [uidoc.Document.GetElement(id) for id in uidoc.Selection.GetElementIds()]
             context_data.update_selected_elements(selection)
 
-        x = ('Message', 'Query hitting')
-        print(x)
-        state.data.append(x)
-        
-        output = []
-        for status, message in state.data:
-            output.append(message)
-            formatted_display = '\n'.join(output)
-            window.FindName("myTextBlock").Text = formatted_display
+            x = ('Message', str('Query hitting'))
+            print(x)
+            state.data.append(x)
+            
+            output = []
+            for status, message in state.data:
+                if isinstance(message, bytes):
+                    message = message.decode('utf-8')
+                output.append(str(message))
+                formatted_display = '\n'.join(str(msg) for msg in output)
+                window.FindName("myTextBlock").Text = str(formatted_display)
         
         print(state)
 
