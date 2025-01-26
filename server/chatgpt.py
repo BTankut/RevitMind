@@ -9,8 +9,14 @@ logger = logging.getLogger(__name__)
 
 def callToOpenAI(userprompt):
     try:
+        # Ensure input is string
+        if isinstance(userprompt, bytes):
+            userprompt = userprompt.decode('utf-8')
+            
         # First check with preprompt
         prepromptresponse = collect_messages(userprompt, getContext('contextpreprompt.txt'))
+        if isinstance(prepromptresponse, bytes):
+            prepromptresponse = prepromptresponse.decode('utf-8')
         prepromptresponse = prepromptresponse.strip()
         
         # If preprompt says YES, get the greeting from contextprompt
@@ -28,11 +34,12 @@ def callToOpenAI(userprompt):
         if prepromptresponse.startswith("MISSING-"):
             return prepromptresponse
             
-        # If preprompt didn't say YES or MISSING, something went wrong
-        return "MISSING-Beklenmeyen cevap formatı"
+        # If preprompt didn't say YES or MISSING, proceed with main prompt
+        response = collect_messages(userprompt, getContext('contextprompt.txt'))
+        if isinstance(response, bytes):
+            response = response.decode('utf-8')
+        return response
         
-        # Only if preprompt says YES, proceed with main prompt
-        return collect_messages(userprompt, getContext('contextprompt.txt'))
     except Exception as e:
         logger.error(f"Error in callToOpenAI: {str(e)}")
         raise
@@ -65,7 +72,10 @@ def get_completion_from_messages(messages, model="openai/gpt-4", temperature=0):
         
         # Handle response
         if response.status_code == 200:
-            return response.json()["choices"][0]["message"]["content"]
+            content = response.json()["choices"][0]["message"]["content"]
+            if isinstance(content, bytes):
+                content = content.decode('utf-8')
+            return content
         else:
             error_detail = response.json() if response.text else "No error details"
             logger.error(f"API Error: Status {response.status_code}, Details: {error_detail}")
@@ -80,6 +90,12 @@ def get_completion_from_messages(messages, model="openai/gpt-4", temperature=0):
 
 def collect_messages(softwareprompt, userprompt):
     try:
+        # Ensure inputs are strings
+        if isinstance(softwareprompt, bytes):
+            softwareprompt = softwareprompt.decode('utf-8')
+        if isinstance(userprompt, bytes):
+            userprompt = userprompt.decode('utf-8')
+            
         context = [{'role':'system', 'content': f"{softwareprompt}"}]
         context.append({'role':'user', 'content':f"{userprompt}"})
         return get_completion_from_messages(context)
@@ -90,7 +106,10 @@ def collect_messages(softwareprompt, userprompt):
 def getContext(filename):
     try:
         with open(os.path.join(os.path.dirname(__file__), filename), "r") as f:
-            return f.read()
+            content = f.read()
+            if isinstance(content, bytes):
+                content = content.decode('utf-8')
+            return content
     except Exception as e:
         logger.error(f"Error reading context file {filename}: {str(e)}")
         raise
