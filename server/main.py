@@ -31,11 +31,15 @@ def send_msg():
         airesponse = callToOpenAI(usermsg['client'])
         print(airesponse)
         
-        # Return response
-        res = make_response(airesponse)
-        res.mimetype = 'application/json'
-        res.status_code = 200
-        return res
+        # Convert response to JSON
+        if isinstance(airesponse, bytes):
+            airesponse = airesponse.decode('utf-8')
+        
+        # Return response as JSON
+        return jsonify({
+            "response": airesponse,
+            "type": "code" if airesponse.startswith(('import', 'from', 'doc =', 'clr.')) else "message"
+        })
         
     except Exception as e:
         print(f"Error: {str(e)}")

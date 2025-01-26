@@ -337,18 +337,21 @@ def query_chat_gpt(window):
             if isinstance(responseString, bytes):
                 responseString = responseString.decode('utf-8')
             
-            if "MISSING" in responseString:
-                x = ('missing', responseString.split("-")[1])
+            # Parse JSON response
+            response = json.loads(responseString)
+            response_text = response["response"]
+            response_type = response["type"]
+            
+            print("Response: %s (Type: %s)" % (response_text, response_type))
+            state.data.append(("Response: ", response_text))
+            
+            if "MISSING" in response_text:
+                x = ('missing', response_text.split("-")[1])
                 state.data.append(x)
                 window.update_state(state)
                 return # unsuccessful
-
-            # Clean and prepare code for execution
-            clean_code, is_code = clean_code_snippet(responseString)
-            print("Response: %s" % clean_code)
-            state.data.append(("Response: ", clean_code))
             
-            if is_code:
+            if response_type == "code":
                 # Execute the code in a safe way
                 try:
                     # Create a new namespace for execution with globals
@@ -363,14 +366,14 @@ def query_chat_gpt(window):
                         'DisplayUnitType': DisplayUnitType
                     })
                     # Execute the code in the namespace
-                    exec(clean_code, namespace)
+                    exec(response_text, namespace)
                 except Exception as exec_error:
                     print("Error executing code: %s" % str(exec_error))
                     raise
             else:
                 # Show as message
-                print(clean_code)
-                x = ('message', clean_code)
+                print(response_text)
+                x = ('message', response_text)
                 state.data.append(x)
                 window.update_state(state)
 
