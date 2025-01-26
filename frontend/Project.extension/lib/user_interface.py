@@ -340,15 +340,28 @@ def query_chat_gpt(window):
             # Parse JSON response
             try:
                 # First try to parse as is
+                print("Trying to parse response: %s" % responseString)
                 response = json.loads(responseString)
-            except:
+            except Exception as json_error:
+                print("JSON parse error: %s" % str(json_error))
                 # If that fails, try to decode bytes first
                 if isinstance(responseString, bytes):
+                    print("Response is bytes, decoding...")
                     responseString = responseString.decode('utf-8')
-                response = json.loads(responseString)
+                try:
+                    print("Trying to parse decoded response: %s" % responseString)
+                    response = json.loads(responseString)
+                except Exception as decode_error:
+                    print("JSON parse error after decode: %s" % str(decode_error))
+                    # If all parsing fails, create our own response object
+                    response = {
+                        "response": responseString,
+                        "type": "message"
+                    }
             
-            response_text = response.get("response", responseString)  # Fallback to full response if no "response" field
-            response_type = response.get("type", "message")  # Default to message type
+            print("Final response object: %s" % str(response))
+            response_text = response.get("response", responseString)
+            response_type = response.get("type", "message")
             
             print("Response: %s (Type: %s)" % (response_text, response_type))
             state.data.append(("Response: ", response_text))
