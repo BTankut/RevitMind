@@ -344,30 +344,35 @@ def query_chat_gpt(window):
                 return # unsuccessful
 
             # Clean and prepare code for execution
-            clean_code = clean_code_snippet(responseString)
-            if isinstance(clean_code, bytes):
-                clean_code = clean_code.decode('utf-8')
-            print("Code response: %s" % clean_code)
-            state.data.append(("Code response: ", clean_code))
+            clean_code, is_code = clean_code_snippet(responseString)
+            print("Response: %s" % clean_code)
+            state.data.append(("Response: ", clean_code))
             
-            # Execute the code in a safe way
-            try:
-                # Create a new namespace for execution with globals
-                namespace = globals().copy()
-                # Add required imports
-                namespace.update({
-                    'clr': clr,
-                    '__revit__': __revit__,
-                    'BuiltInCategory': BuiltInCategory,
-                    'FilteredElementCollector': FilteredElementCollector,
-                    'UnitUtils': UnitUtils,
-                    'DisplayUnitType': DisplayUnitType
-                })
-                # Execute the code in the namespace
-                exec(clean_code, namespace)
-            except Exception as exec_error:
-                print("Error executing code: %s" % str(exec_error))
-                raise
+            if is_code:
+                # Execute the code in a safe way
+                try:
+                    # Create a new namespace for execution with globals
+                    namespace = globals().copy()
+                    # Add required imports
+                    namespace.update({
+                        'clr': clr,
+                        '__revit__': __revit__,
+                        'BuiltInCategory': BuiltInCategory,
+                        'FilteredElementCollector': FilteredElementCollector,
+                        'UnitUtils': UnitUtils,
+                        'DisplayUnitType': DisplayUnitType
+                    })
+                    # Execute the code in the namespace
+                    exec(clean_code, namespace)
+                except Exception as exec_error:
+                    print("Error executing code: %s" % str(exec_error))
+                    raise
+            else:
+                # Show as message
+                print(clean_code)
+                x = ('message', clean_code)
+                state.data.append(x)
+                window.update_state(state)
 
             x = ('successful', '')
             state.data.append(x)

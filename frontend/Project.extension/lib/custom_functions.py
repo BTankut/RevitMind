@@ -92,16 +92,25 @@ def clean_code_snippet(snippet):
     if isinstance(snippet, bytes):
         snippet = snippet.decode('utf-8')
     
-    # Split the snippet into lines
-    lines = []
-    current_indent = 0
+    # Remove code blocks if present
+    if '```' in snippet:
+        code_blocks = snippet.split('```')
+        if len(code_blocks) >= 3:  # Has start and end markers
+            snippet = code_blocks[1]  # Take content between first pair of markers
     
-    # Process each line
-    for line in snippet.split('\n'):
-        # Skip empty lines and comment-only lines
-        line = line.rstrip()
-        if not line or line.strip().startswith(('```', '#', 'This script')):
-            continue
+    # Check if it's code
+    snippet = snippet.strip()
+    if snippet.startswith(('import', 'from', 'doc =', 'clr.')):
+        # Split the snippet into lines
+        lines = []
+        current_indent = 0
+        
+        # Process each line
+        for line in snippet.split('\n'):
+            # Skip empty lines and comment-only lines
+            line = line.rstrip()
+            if not line or line.strip().startswith(('#', 'This script')):
+                continue
             
         # Handle indentation
         stripped_line = line.lstrip()
@@ -154,4 +163,4 @@ def get_duct_size(duct):
     if 'get_duct_size' in clean_snippet and helper_function not in clean_snippet:
         clean_snippet = helper_function + '\n' + clean_snippet
     
-    return clean_snippet
+    return clean_snippet, snippet.startswith(('import', 'from', 'doc =', 'clr.'))
